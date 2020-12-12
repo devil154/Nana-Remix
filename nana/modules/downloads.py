@@ -27,6 +27,14 @@ Give url as args to download it.
 -> `download`
 Reply a document to download it.
 
+──「 **Upload To Telegram** 」──
+-> `upload (path)`
+give path of file to send to telegram.
+
+──「 **List files and directories** 」──
+-> `ls (path)`
+see list of files and directories, path is optional
+
 ──「 **Direct Link Download** 」──
 -> `direct (url)`
 Create A direct link download
@@ -38,6 +46,50 @@ github.com | Sourceforge
 androidfilehost.com`
 """
 
+
+@app.on_message(filters.user(AdminSettings) & filters.command("ls", Command))
+async def ls(_, message):
+    args = message.text.split(None, 1)
+    basepath = "nana/{}".format(args[1]) if len(args) == 2 else "nana/"
+    directory = ""
+    listfile = ""
+    for entry in os.listdir(basepath):
+        if os.path.isdir(os.path.join(basepath, entry)):
+            directory += "\n{}".format(entry)
+    for entry in os.listdir(basepath):
+        if os.path.isfile(os.path.join(basepath, entry)):
+            listfile += "\n{}".format(entry)
+    await edrep(
+        message,
+        text="**List directory :**`{}`\n**List file :**`{}`".format(
+            directory, listfile
+        ),
+    )
+
+
+@app.on_message(filters.user(AdminSettings) & filters.command("upload", Command))
+async def upload_file(client, message):
+    args = message.text.split(None, 1)
+    if len(args) == 1:
+        await edrep(message, text="usage : upload (path)")
+        return
+    path = "nana/{}".format(args[1])
+    try:
+        await app.send_document(
+            message.chat.id,
+            path,
+            progress=lambda d, t: asyncio.get_event_loop().create_task(
+                progressdl(d, t, message, time.time(), "Uploading...")
+            ),
+        )
+    except Exception as e:
+        logging.error("Exception occured", exc_info=True)
+        logging.error(e)
+        await edrep(message, text="`File not found!`")
+        return
+    await edrep(message, text="`Success!`")
+    await asyncio.sleep(5)
+    await client.delete_messages(message.chat.id, message.message_id)
 
 
 async def time_parser(start, end):
@@ -120,7 +172,7 @@ async def download_from_url(_, message):
 @app.on_message(filters.user(AdminSettings) & filters.command("download", Command))
 async def dssownload_from_telegram(client, message):
     if message.reply_to_message:
-        await download_file_from_tg(message)
+        await download_file_from_tg(client, message)
     else:
         await edrep(message, text="Reply document to download it")
 
@@ -423,67 +475,114 @@ async def time_formatter(milliseconds: int) -> str:
     return tmp[:-2]
 
 
-async def download_reply_nocall(message):
+async def download_reply_nocall(client, message):
     if message.reply_to_message.photo:
-        nama = await message.reply_to_message.download()
+        nama = "photo_{}_{}.png".format(
+            message.reply_to_message.photo.file_id, message.reply_to_message.photo.date
+        )
+        await client.download_media(
+            message.reply_to_message.photo, file_name="nana/downloads/" + nama
+        )
     elif message.reply_to_message.animation:
-        nama = await message.reply_to_message.download()
+        nama = "giphy_{}-{}.gif".format(
+            message.reply_to_message.animation.date,
+            message.reply_to_message.animation.file_size,
+        )
+        await client.download_media(
+            message.reply_to_message.animation, file_name="nana/downloads/" + nama
+        )
     elif message.reply_to_message.video:
-        nama = await message.reply_to_message.download()
+        nama = "video_{}-{}.mp4".format(
+            message.reply_to_message.video.date,
+            message.reply_to_message.video.file_size,
+        )
+        await client.download_media(
+            message.reply_to_message.video, file_name="nana/downloads/" + nama
+        )
     elif message.reply_to_message.sticker:
-        nama = await message.reply_to_message.download()
+        nama = "sticker_{}_{}.webp".format(
+            message.reply_to_message.sticker.date,
+            message.reply_to_message.sticker.set_name,
+        )
+        await client.download_media(
+            message.reply_to_message.sticker, file_name="nana/downloads/" + nama
+        )
     elif message.reply_to_message.audio:
-        nama = await message.reply_to_message.download()
+        nama = "{}".format(message.reply_to_message.audio.file_name)
+        await client.download_media(
+            message.reply_to_message.audio, file_name="nana/downloads/" + nama
+        )
     elif message.reply_to_message.voice:
-        nama = await message.reply_to_message.download()
+        nama = "audio_{}.ogg".format(message.reply_to_message.voice.date)
+        await client.download_media(
+            message.reply_to_message.voice, file_name="nana/downloads/" + nama
+        )
     elif message.reply_to_message.document:
-        nama = await message.reply_to_message.download()
+        nama = "{}".format(message.reply_to_message.document.file_name)
+        await client.download_media(
+            message.reply_to_message.document, file_name="nana/downloads/" + nama
+        )
     else:
         return False
-    return nama
+    return "nana/downloads/" + nama
 
 
-async def download_file_from_tg(message):
+async def download_file_from_tg(client, message):
     start = int(time.time())
     c_time = time.time()
+    name = await name_file(client, message)
     if message.reply_to_message.photo:
-        name = await message.reply_to_message.download(
+        await client.download_media(
+            message.reply_to_message.photo,
+            file_name="nana/downloads/" + name,
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.animation:
-        name = await message.reply_to_message.download(
+        await client.download_media(
+            message.reply_to_message.animation,
+            file_name="nana/downloads/" + name,
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.video:
-        name = await message.reply_to_message.download(
+        await client.download_media(
+            message.reply_to_message.video,
+            file_name="nana/downloads/" + name,
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.sticker:
-        name = await message.reply_to_message.download(
+        await client.download_media(
+            message.reply_to_message.sticker,
+            file_name="nana/downloads/" + name,
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.audio:
-        name = await message.reply_to_message.download(
+        await client.download_media(
+            message.reply_to_message.audio,
+            file_name="nana/downloads/" + name,
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.voice:
-        name = await message.reply_to_message.download(
+        await client.download_media(
+            message.reply_to_message.voice,
+            file_name="nana/downloads/" + name,
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.document:
-        name = await message.reply_to_message.download(
+        await client.download_media(
+            message.reply_to_message.document,
+            file_name="nana/downloads/" + name,
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
@@ -493,5 +592,36 @@ async def download_file_from_tg(message):
         return
     end = int(time.time())
     times = await time_parser(start, end)
-    text = f"**⬇ Downloaded!**\n🗂 File Location: `{name}`\n⏲ Downloaded in: {times}"
+    text = f"**⬇ Downloaded!**\n🗂 File name: `{name}`\n🏷 Saved to: `nana/downloads/`\n⏲ Downloaded in: {times}"
     await edrep(message, text=text)
+
+
+async def name_file(_, message):
+    if message.reply_to_message.photo:
+        return "photo_{}_{}.png".format(
+            message.reply_to_message.photo.date, message.reply_to_message.photo.date
+        )
+    elif message.reply_to_message.animation:
+        return "giphy_{}-{}.gif".format(
+            message.reply_to_message.animation.date,
+            message.reply_to_message.animation.file_size,
+        )
+    elif message.reply_to_message.video:
+        return "video_{}-{}.mp4".format(
+            message.reply_to_message.video.date,
+            message.reply_to_message.video.file_size,
+        )
+    elif message.reply_to_message.sticker:
+        return "sticker_{}_{}.webp".format(
+            message.reply_to_message.sticker.date,
+            message.reply_to_message.sticker.set_name,
+        )
+    elif message.reply_to_message.audio:
+        return "{}".format(message.reply_to_message.audio.file_name)
+    elif message.reply_to_message.voice:
+        return "audio_{}.ogg".format(message.reply_to_message.voice.date)
+    elif message.reply_to_message.document:
+        return "{}".format(message.reply_to_message.document.file_name)
+    else:
+        await edrep(message, text="Unknown file!")
+        return
