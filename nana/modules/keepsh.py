@@ -27,21 +27,14 @@ async def tfsh(client, message):
         await edrep(message, text="`Reply to any file telegram message!`")
         return
     await edrep(message, text="`Processing...`")
-    name = await name_file(message)
-    await download_file_from_tg(message)
+    name = await download_file_from_tg(message)
     name_file_upload = name[-10:] if len(name) > 10 else name
     name_file_upload.encode("ascii", "ignore")
-    os.rename(
-        r"nana/downloads/{}".format(name), r"nana/downloads/{}".format(name_file_upload)
-    )
-    print(name_file_upload)
     await edrep(
         message,
-        text=await send_to_keepsh(
-            "nana/downloads/{}".format(name_file_upload), message, name_file_upload
-        ),
+        text=await send_to_keepsh(name, message, name_file_upload),
     )
-    os.remove("nana/downloads/{}".format(name_file_upload))
+    os.remove(name)
     return
 
 
