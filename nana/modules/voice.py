@@ -105,7 +105,7 @@ async def speach_to_text(client, message):
     start = datetime.now()
     input_str = message.reply_to_message.voice
     if input_str:
-        required_file_name = await download_reply_nocall(client, message)
+        required_file_name = await download_reply_nocall(message)
         if IBM_WATSON_CRED_URL is None or IBM_WATSON_CRED_PASSWORD is None:
             await edrep(message, text="`no ibm watson key provided, aborting...`")
             await asyncio.sleep(3)
