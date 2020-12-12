@@ -41,6 +41,7 @@ RUN apt update && apt upgrade -y && \
     libssl-dev \
     libgconf-2-4 \
     libxi6 \
+    zlib1g-dev \
     xvfb \
     unzip \
     libopus0 \
