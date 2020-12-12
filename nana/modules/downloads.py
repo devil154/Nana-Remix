@@ -446,45 +446,44 @@ async def download_reply_nocall(message):
 async def download_file_from_tg(message):
     start = int(time.time())
     c_time = time.time()
-    name = await name_file(message)
     if message.reply_to_message.photo:
-        await message.reply_to_message.download(
+        name = await message.reply_to_message.download(
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.animation:
-        await message.reply_to_message.download(
+        name = await message.reply_to_message.download(
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.video:
-        await message.reply_to_message.download(
+        name = await message.reply_to_message.download(
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.sticker:
-        await message.reply_to_message.download(
+        name = await message.reply_to_message.download(
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.audio:
-        await message.reply_to_message.download(
+        name = await message.reply_to_message.download(
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.voice:
-        await message.reply_to_message.download(
+        name = await message.reply_to_message.download(
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
         )
     elif message.reply_to_message.document:
-        await message.reply_to_message.download(
+        name = await message.reply_to_message.download(
             progress=lambda d, t: asyncio.get_event_loop().create_task(
                 progressdl(d, t, message, c_time, "Downloading...")
             ),
@@ -494,7 +493,7 @@ async def download_file_from_tg(message):
         return
     end = int(time.time())
     times = await time_parser(start, end)
-    text = f"**⬇ Downloaded!**\n🗂 File name: `{name}`\n🏷 Saved to: `nana/downloads/`\n⏲ Downloaded in: {times}"
+    text = f"**⬇ Downloaded!**\n🗂 File Location: `{name}`\n⏲ Downloaded in: {times}"
     await edrep(message, text=text)
 
 
