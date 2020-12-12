@@ -495,34 +495,3 @@ async def download_file_from_tg(message):
     times = await time_parser(start, end)
     text = f"**⬇ Downloaded!**\n🗂 File Location: `{name}`\n⏲ Downloaded in: {times}"
     await edrep(message, text=text)
-
-
-async def name_file(message):
-    if message.reply_to_message.photo:
-        return "photo_{}_{}.png".format(
-            message.reply_to_message.photo.date, message.reply_to_message.photo.date
-        )
-    elif message.reply_to_message.animation:
-        return "giphy_{}-{}.gif".format(
-            message.reply_to_message.animation.date,
-            message.reply_to_message.animation.file_size,
-        )
-    elif message.reply_to_message.video:
-        return "video_{}-{}.mp4".format(
-            message.reply_to_message.video.date,
-            message.reply_to_message.video.file_size,
-        )
-    elif message.reply_to_message.sticker:
-        return "sticker_{}_{}.webp".format(
-            message.reply_to_message.sticker.date,
-            message.reply_to_message.sticker.set_name,
-        )
-    elif message.reply_to_message.audio:
-        return "{}".format(message.reply_to_message.audio.file_name)
-    elif message.reply_to_message.voice:
-        return "audio_{}.ogg".format(message.reply_to_message.voice.date)
-    elif message.reply_to_message.document:
-        return "{}".format(message.reply_to_message.document.file_name)
-    else:
-        await edrep(message, text="Unknown file!")
-        return

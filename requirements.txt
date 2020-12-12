@@ -29,7 +29,6 @@ speedtest-cli
 timeago
 httplib2==0.15.0
 coffeehouse==2.2.2
-pycurl==7.43.0.5
 tracemoepy
 emoji==0.5.4
 beautifulsoup4==4.9.1
