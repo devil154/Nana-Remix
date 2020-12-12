@@ -27,14 +27,6 @@ Give url as args to download it.
 -> `download`
 Reply a document to download it.
 
-──「 **Upload To Telegram** 」──
--> `upload (path)`
-give path of file to send to telegram.
-
-──「 **List files and directories** 」──
--> `ls (path)`
-see list of files and directories, path is optional
-
 ──「 **Direct Link Download** 」──
 -> `direct (url)`
 Create A direct link download
@@ -46,50 +38,6 @@ github.com | Sourceforge
 androidfilehost.com`
 """
 
-
-@app.on_message(filters.user(AdminSettings) & filters.command("ls", Command))
-async def ls(_, message):
-    args = message.text.split(None, 1)
-    basepath = "nana/{}".format(args[1]) if len(args) == 2 else "nana/"
-    directory = ""
-    listfile = ""
-    for entry in os.listdir(basepath):
-        if os.path.isdir(os.path.join(basepath, entry)):
-            directory += "\n{}".format(entry)
-    for entry in os.listdir(basepath):
-        if os.path.isfile(os.path.join(basepath, entry)):
-            listfile += "\n{}".format(entry)
-    await edrep(
-        message,
-        text="**List directory :**`{}`\n**List file :**`{}`".format(
-            directory, listfile
-        ),
-    )
-
-
-@app.on_message(filters.user(AdminSettings) & filters.command("upload", Command))
-async def upload_file(client, message):
-    args = message.text.split(None, 1)
-    if len(args) == 1:
-        await edrep(message, text="usage : upload (path)")
-        return
-    path = "nana/{}".format(args[1])
-    try:
-        await app.send_document(
-            message.chat.id,
-            path,
-            progress=lambda d, t: asyncio.get_event_loop().create_task(
-                progressdl(d, t, message, time.time(), "Uploading...")
-            ),
-        )
-    except Exception as e:
-        logging.error("Exception occured", exc_info=True)
-        logging.error(e)
-        await edrep(message, text="`File not found!`")
-        return
-    await edrep(message, text="`Success!`")
-    await asyncio.sleep(5)
-    await client.delete_messages(message.chat.id, message.message_id)
 
 
 async def time_parser(start, end):

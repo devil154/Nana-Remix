@@ -27,7 +27,7 @@ async def tfsh(client, message):
         await edrep(message, text="`Reply to any file telegram message!`")
         return
     await edrep(message, text="`Processing...`")
-    name = await name_file(client, message)
+    name = await name_file(message)
     await download_file_from_tg(message)
     name_file_upload = name[-10:] if len(name) > 10 else name
     name_file_upload.encode("ascii", "ignore")
